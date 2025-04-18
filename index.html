@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Stock Calculator</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 0.5rem;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1rem;
+        }
+
+        header {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--primary), #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        main {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            main {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card h2 svg {
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--card-bg);
+            color: var(--text);
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .results {
+            margin-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            padding-top: 1.5rem;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+        }
+
+        .result-item .label {
+            font-weight: 500;
+        }
+
+        .result-item .value {
+            font-weight: 700;
+        }
+
+        .highlight {
+            color: var(--primary);
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            position: relative;
+            margin-top: 1.5rem;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .data-table th, .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table th {
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        footer {
+            max-width: 1200px;
+            width: 100%;
+            margin: 3rem auto 0;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Stock Calculator</h1>
+        <p class="subtitle">Calculate your investment returns and analyze stock performance</p>
+    </header>
+
+    <main>
+        <div class="card">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 3v18h18"></path>
+                    <path d="M18 9l-5-6-5 6"></path>
+                    <path d="M18 16l-5-6-5 6"></path>
+                </svg>
+                Investment Calculator
+            </h2>
+            <div class="form-group">
+                <label for="initialInvestment">Initial Investment ($)</label>
+                <input type="number" id="initialInvestment" value="1000" min="0" step="100">
+            </div>
+            <div class="form-group">
+                <label for="additionalContribution">Monthly Contribution ($)</label>
+                <input type="number" id="additionalContribution" value="100" min="0" step="10">
+            </div>
+            <div class="form-group">
+                <label for="annualReturn">Expected Annual Return (%)</label>
+                <input type="number" id="annualReturn" value="8" min="0" max="100" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="investmentPeriod">Investment Period (Years)</label>
+                <input type="number" id="investmentPeriod" value="10" min="1" max="50">
+            </div>
+            <div class="form-group">
+                <label for="compoundingFrequency">Compounding Frequency</label>
+                <select id="compoundingFrequency">
+                    <option value="12">Monthly</option>
+                    <option value="4">Quarterly</option>
+                    <option value="1">Annually</option>
+                </select>
+            </div>
+            <button id="calculateBtn">Calculate Returns</button>
+
+            <div class="results" id="investmentResults">
+                <div class="result-item">
+                    <div class="label">Final Balance</div>
+                    <div class="value highlight" id="finalBalance">$0.00</div>
+                </div>
+                <div class="result-item">
+                    <div class="label">Total Contributions</div>
+                    <div class="value" id="totalContributions">$0.00</div>
+                </div>
+                <div class="result-item">
+                    <div class="label">Total Interest Earned</div>
+                    <div class="value" id="totalInterest">$0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20V10"></path>
+                    <path d="M18 20V4"></path>
+                    <path d="M6 20v-6"></path>
+                </svg>
+                Stock Comparison
+            </h2>
+            <div class="form-group">
+                <label for="stock1">Stock 1</label>
+                <input type="text" id="stock1" placeholder="Enter stock ticker">
+            </div>
+            <div class="form-group">
+                <label for="stock1Price">Current Price ($)</label>
+                <input type="number" id="stock1Price" placeholder="Enter current price" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+                <label for="stock1PE">P/E Ratio</label>
+                <input type="number" id="stock1PE" placeholder="Enter P/E ratio" min="0" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="stock2">Stock 2</label>
+                <input type="text" id="stock2" placeholder="Enter stock ticker">
+            </div>
+            <div class="form-group">
+                <label for="stock2Price">Current Price ($)</label>
+                <input type="number" id="stock2Price" placeholder="Enter current price" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+                <label for="stock2PE">P/E Ratio</label>
+                <input type="number" id="stock2PE" placeholder="Enter P/E ratio" min="0" step="0.1">
+            </div>
+            <button id="compareBtn">Compare Stocks</button>
+
+            <div class="results" id="comparisonResults" style="display: none;">
+                <div class="result-item">
+                    <div class="label">Relative Value</div>
+                    <div class="value" id="relativeValue">-</div>
+                </div>
+                <div class="result-item">
+                    <div class="label">PE Ratio Difference</div>
+                    <div class="value" id="peDifference">-</div>
+                </div>
+                <div class="result-item">
+                    <div class="label">Recommendation</div>
+                    <div class="value highlight" id="recommendation">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v20"></path>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                Return Projection
+            </h2>
+            <div class="chart-container" id="chartContainer">
+                <canvas id="projectionChart"></canvas>
+            </div>
+            <div class="results">
+                <div class="result-item">
+                    <div class="label">5-Year Projected Value</div>
+                    <div class="value" id="fiveYearValue">$0.00</div>
+                </div>
+                <div class="result-item">
+                    <div class="label">10-Year Projected Value</div>
+                    <div class="value" id="tenYearValue">$0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <path d="M9 22V12h6v10"></path>
+                </svg>
+                Portfolio Tracker
+            </h2>
+            <div class="form-group">
+                <label for="portfolioStock">Stock Ticker</label>
+                <input type="text" id="portfolioStock" placeholder="Enter stock ticker">
+            </div>
+            <div class="form-group">
+                <label for="stockShares">Number of Shares</label>
+                <input type="number" id="stockShares" placeholder="Enter number of shares" min="0" step="1">
+            </div>
+            <div class="form-group">
+                <label for="purchasePrice">Purchase Price ($)</label>
+                <input type="number" id="purchasePrice" placeholder="Enter purchase price" min="0" step="0.01">
+            </div>
+            <button id="addStockBtn">Add to Portfolio</button>
+
+            <table class="data-table" id="portfolioTable">
+                <thead>
+                    <tr>
+                        <th>Stock</th>
+                        <th>Shares</th>
+                        <th>Price</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody id="portfolioBody">
+                    <!-- Portfolio stocks will be added here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 Modern Stock Calculator | All calculations are estimates and not financial advice</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Investment Calculator
+            const calculateBtn = document.getElementById('calculateBtn');
+            calculateBtn.addEventListener('click', calculateInvestment);
+
+            // Stock Comparison
+            const compareBtn = document.getElementById('compareBtn');
+            compareBtn.addEventListener('click', compareStocks);
+
+            // Portfolio Tracker
+            const addStockBtn = document.getElementById('addStockBtn');
+            addStockBtn.addEventListener('click', addToPortfolio);
+
+            // Initialize chart
+            initChart();
+            
+            // Calculate initial values
+            calculateInvestment();
+        });
+
+        // Portfolio data
+        const portfolio = [];
+
+        function calculateInvestment() {
+            const initialInvestment = parseFloat(document.getElementById('initialInvestment').value) || 0;
+            const additionalContribution = parseFloat(document.getElementById('additionalContribution').value) || 0;
+            const annualReturn = parseFloat(document.getElementById('annualReturn').value) || 0;
+            const investmentPeriod = parseInt(document.getElementById('investmentPeriod').value) || 0;
+            const compoundingFrequency = parseInt(document.getElementById('compoundingFrequency').value) || 12;
+
+            // Calculate investment growth
+            const monthlyRate = (annualReturn / 100) / compoundingFrequency;
+            const totalPeriods = investmentPeriod * compoundingFrequency;
+            
+            let balance = initialInvestment;
+            let totalContributions = initialInvestment;
+            const timeData = [];
+            const balanceData = [];
+            const contributionData = [];
+
+            // Calculate year 5 and year 10 projections
+            let fiveYearValue = 0;
+            let tenYearValue = 0;
+
+            for (let period = 1; period <= totalPeriods; period++) {
+                balance = balance * (1 + monthlyRate) + additionalContribution;
+                totalContributions += additionalContribution;
+                
+                // Record data for chart
+                if (period % compoundingFrequency === 0) {
+                    const year = period / compoundingFrequency;
+                    timeData.push(`Year ${year}`);
+                    balanceData.push(balance);
+                    contributionData.push(totalContributions);
+                    
+                    if (year === 5) fiveYearValue = balance;
+                    if (year === 10) tenYearValue = balance;
+                }
+            }
+
+            // Update results
+            document.getElementById('finalBalance').textContent = formatCurrency(balance);
+            document.getElementById('totalContributions').textContent = formatCurrency(totalContributions);
+            document.getElementById('totalInterest').textContent = formatCurrency(balance - totalContributions);
+            
+            // Update projections
+            document.getElementById('fiveYearValue').textContent = formatCurrency(fiveYearValue);
+            document.getElementById('tenYearValue').textContent = formatCurrency(tenYearValue);
+            
+            // Update chart
+            updateChart(timeData, balanceData, contributionData);
+        }
+
+        function compareStocks() {
+            const stock1 = document.getElementById('stock1').value;
+            const stock1Price = parseFloat(document.getElementById('stock1Price').value) || 0;
+            const stock1PE = parseFloat(document.getElementById('stock1PE').value) || 0;
+            
+            const stock2 = document.getElementById('stock2').value;
+            const stock2Price = parseFloat(document.getElementById('stock2Price').value) || 0;
+            const stock2PE = parseFloat(document.getElementById('stock2PE').value) || 0;
+            
+            // Simple comparison logic
+            let recommendation = '';
+            let relativeValue = '';
+            let peDifference = '';
+            
+            if (stock1PE && stock2PE) {
+                const difference = ((stock1PE - stock2PE) / stock2PE * 100).toFixed(2);
+                peDifference = `${difference}%`;
+                
+                if (stock1PE < stock2PE) {
+                    relativeValue = `${stock1} appears cheaper based on P/E`;
+                    recommendation = `Consider ${stock1} if earnings growth similar`;
+                } else if (stock1PE > stock2PE) {
+                    relativeValue = `${stock2} appears cheaper based on P/E`;
+                    recommendation = `Consider ${stock2} if earnings growth similar`;
+                } else {
+                    relativeValue = 'Similar P/E ratios';
+                    recommendation = 'Evaluate other metrics for decision';
+                }
+            }
+            
+            // Display results
+            document.getElementById('comparisonResults').style.display = 'block';
+            document.getElementById('relativeValue').textContent = relativeValue || 'Insufficient data';
+            document.getElementById('peDifference').textContent = peDifference || 'Insufficient data';
+            document.getElementById('recommendation').textContent = recommendation || 'Enter P/E ratios to compare';
+        }
+
+        function addToPortfolio() {
+            const ticker = document.getElementById('portfolioStock').value;
+            const shares = parseInt(document.getElementById('stockShares').value) || 0;
+            const price = parseFloat(document.getElementById('purchasePrice').value) || 0;
+            
+            if (ticker && shares && price) {
+                const value = shares * price;
+                
+                // Add to portfolio data
+                portfolio.push({
+                    ticker: ticker,
+                    shares: shares,
+                    price: price,
+                    value: value
+                });
+                
+                // Clear form
+                document.getElementById('portfolioStock').value = '';
+                document.getElementById('stockShares').value = '';
+                document.getElementById('purchasePrice').value = '';
+                
+                // Update portfolio table
+                updatePortfolioTable();
+            }
+        }
+
+        function updatePortfolioTable() {
+            const tbody = document.getElementById('portfolioBody');
+            tbody.innerHTML = '';
+            
+            portfolio.forEach(stock => {
+                const row = document.createElement('tr');
+                
+                const tickerCell = document.createElement('td');
+                tickerCell.textContent = stock.ticker;
+                
+                const sharesCell = document.createElement('td');
+                sharesCell.textContent = stock.shares;
+                
+                const priceCell = document.createElement('td');
+                priceCell.textContent = formatCurrency(stock.price);
+                
+                const valueCell = document.createElement('td');
+                valueCell.textContent = formatCurrency(stock.value);
+                
+                row.appendChild(tickerCell);
+                row.appendChild(sharesCell);
+                row.appendChild(priceCell);
+                row.appendChild(valueCell);
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('projectionChart').getContext('2d');
+            window.investmentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Balance',
+                            data: [],
+                            backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                            borderColor: 'rgba(99, 102, 241, 1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Contributions',
+                            data: [],
+                            backgroundColor: 'rgba(139, 92, 246, 0.05)',
+                            borderColor: 'rgba(139, 92, 246, 0.5)',
+                            borderWidth: 1,
+                            borderDash: [5, 5],
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart(timeData, balanceData, contributionData) {
+            window.investmentChart.data.labels = timeData;
+            window.investmentChart.data.datasets[0].data = balanceData;
+            window.investmentChart.data.datasets[1].data = contributionData;
+            window.investmentChart.update();
+        }
+
+        function formatCurrency(value) {
+            return '$' + value.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+    </script>
+</body>
+</html>
